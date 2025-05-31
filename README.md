@@ -14,8 +14,8 @@
 5. os
 
 #### ⚠️ Attention :
-##### You Need To Install `wkhtmltopdf` from `https://wkhtmltopdf.org/downloads.html`
-##### 📌 Make sure the following path exists on your computer:
+1. You Need To Install `wkhtmltopdf` from `https://wkhtmltopdf.org/downloads.html`
+2. 📌 Make sure the following path exists on your computer:
 ``` python 
 config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
 ```
