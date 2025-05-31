@@ -8,7 +8,7 @@ class ProductDataSource:
     def __init__(self, database: Database):
         self.database = database
 
-    def addNewProduct(self, product:Product):
+    def addNewProduct(self, product: Product):
         cursor = self.database.con.cursor()
         cursor.execute(
             "INSERT INTO Product (prName, buyPrice, sellPrice, inventory, desc) VALUES (?, ?, ?, ?, ?)",
@@ -56,4 +56,14 @@ class ProductDataSource:
             product.productCode,
         )
         cursor.execute(query, values)
+        self.database.con.commit()
+
+    
+    def deleteProductById(self, prCode):
+        cursor = self.database.con.cursor()
+        query = """
+            DELETE FROM Product
+            WHERE prCode = ?
+        """
+        cursor.execute(query, (prCode,))
         self.database.con.commit()
