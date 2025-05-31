@@ -6,7 +6,7 @@
 3. Remove Product
 4. Generate PDF Report
 
-##### 🛠️ Libraries Used:
+#### 🛠️ Libraries Used:
 1. sys
 2. PyQt5
 3. sqlite3
