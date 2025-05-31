@@ -10,11 +10,10 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
 )
-from PyQt5.QtGui import QFont, QIcon, QPixmap
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from helper.database import Database
-from model.product import Product
-
+from Helper.database import Database
+from Model.product import Product
 
 class AddProductForm(QWidget):
     def __init__(self):
@@ -23,69 +22,88 @@ class AddProductForm(QWidget):
         self.setGeometry(500, 200, 500, 550)
         self.setStyleSheet(
             """
-            QWidget {
-                background-color: #f5f7fa;
-                font-family: Vazir;
-                font-size: 14px;
-            }
-            QLabel {
-                color: #333;
-                padding: 3px;
-            }
-            QLineEdit, QComboBox, QTextEdit, QSpinBox {
-                background-color: white;
-                border: 1px solid #d1d5db;
-                border-radius: 6px;
-                padding: 8px;
-                min-width: 200px;
-                selection-background-color: #3b82f6;
-            }
-            QComboBox::drop-down {
-                subcontrol-origin: padding;
-                subcontrol-position: top left;
-                width: 20px;
-                border-left-width: 1px;
-                border-left-color: #d1d5db;
-                border-left-style: solid;
-                border-top-right-radius: 6px;
-                border-bottom-right-radius: 6px;
-            }
-            QTextEdit {
-                min-height: 80px;
-            }
-            QPushButton {
-                background-color: #3b82f6;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                font-weight: bold;
-                min-width: 100px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #2563eb;
-            }
-            QPushButton:pressed {
-                background-color: #1d4ed8;
-            }
-            #cancel_btn {
-                background-color: #ef4444;
-            }
-            #cancel_btn:hover {
-                background-color: #dc2626;
-            }
-            #cancel_btn:pressed {
-                background-color: #b91c1c;
-            }
-            #header {
-                background-color: #3b82f6;
-                color: white;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-            }
-        """
+    QWidget {
+        background-color: #f3f4f6;
+        font-family: Vazir;
+        font-size: 15px;
+    }
+
+    QLabel {
+        color: #1f2937;
+        padding: 4px;
+        font-weight: bold;
+    }
+
+    QLineEdit, QComboBox, QTextEdit, QSpinBox {
+        background-color: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 14px;
+        color: #111827;
+        selection-background-color: #3b82f6;
+    }
+
+    QLineEdit:focus, QComboBox:focus, QTextEdit:focus, QSpinBox:focus {
+        border: 2px solid #3b82f6;
+        background-color: #ffffff;
+    }
+
+    QComboBox::drop-down {
+        subcontrol-origin: padding;
+        subcontrol-position: top left;
+        width: 25px;
+        border-left: 1px solid #d1d5db;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        background-color: #e5e7eb;
+    }
+
+    QTextEdit {
+        min-height: 90px;
+    }
+
+    QPushButton {
+        background-color: #10b981;
+        color: white;
+        padding: 10px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 15px;
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    QPushButton:hover {
+        background-color: #059669;
+    }
+
+    QPushButton:pressed {
+        background-color: #047857;
+    }
+
+    #cancel_btn {
+        background-color: #ef4444;
+    }
+
+    #cancel_btn:hover {
+        background-color: #dc2626;
+    }
+
+    #cancel_btn:pressed {
+        background-color: #b91c1c;
+    }
+
+    #header {
+        background-color: #3b82f6;
+        color: white;
+        padding: 18px;
+        border-radius: 14px;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+"""
         )
 
         # Layouts
@@ -116,7 +134,6 @@ class AddProductForm(QWidget):
         self.code_input = QLineEdit()
         self.code_input.setPlaceholderText("کد کالا را وارد کنید")
         self.code_input.setFont(input_font)
-
 
         self.unit_input = QComboBox()
         self.unit_input.addItems(["عدد", "کیلوگرم", "لیتر", "متر", "بسته"])
@@ -163,15 +180,7 @@ class AddProductForm(QWidget):
         # Buttons
         save_btn = QPushButton("💾 ذخیره کالا")
 
-        save_btn.clicked.connect(
-            lambda: self.saveProduct(
-                productName=self.name_input.text(),
-                buyPrice=float(self.buy_price_input.text()),
-                sellPrice=float(self.sell_price_input.text()),
-                inventory=int(self.stock_input.text()),
-                description=self.desc_input.toPlainText(),
-            )
-        )
+        save_btn.clicked.connect(self.handleSave)
 
         save_btn.setCursor(Qt.PointingHandCursor)
 
@@ -190,13 +199,55 @@ class AddProductForm(QWidget):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
+    def handleSave(self):
+        try:
+            pr_code = self.code_input.text()
+            name = self.name_input.text()
+            buy_price_text = self.buy_price_input.text()
+            sell_price_text = self.sell_price_input.text()
+            inventory = self.stock_input.value()
+            desc = self.desc_input.toPlainText()
+
+            # اعتبارسنجی
+            if not buy_price_text or not sell_price_text:
+                print("لطفاً قیمت خرید و فروش را وارد کنید.")
+                return
+
+            buy_price = float(buy_price_text)
+            sell_price = float(sell_price_text)
+
+            self.saveProduct(
+                prCode=pr_code,
+                productName=name,
+                buyPrice=buy_price,
+                sellPrice=sell_price,
+                inventory=inventory,
+                description=desc,
+            )
+
+        except ValueError:
+            print("مقدار قیمت‌ها باید عددی باشند.")
+        except Exception as e:
+            print("خطا در ذخیره کالا:", e)
+
     def saveProduct(
-        self,productName, buyPrice, sellPrice, inventory, description, categoryId
+        self,
+        prCode=None,
+        productName=None,
+        buyPrice=None,
+        sellPrice=None,
+        inventory=None,
+        description=None,
     ):
         db = Database()
         try:
             product = Product(
-                productName, buyPrice, sellPrice, inventory, description, categoryId
+                prCode=prCode,
+                prName=productName,
+                buyPrice=buyPrice,
+                sellPrice=sellPrice,
+                inventory=inventory,
+                desc=description,
             )
             db.addNewProduct(product)
             print("محصول با موفقیت ذخیره شد.")

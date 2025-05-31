@@ -9,9 +9,10 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QHBoxLayout,
     QApplication,
+    QHeaderView,
 )
-
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QColor, QPalette
 from model.product import Product
 from helper.database import Database
 
@@ -21,94 +22,176 @@ class EditProductForm(QWidget):
         super().__init__()
         self.database = Database()
         self.setWindowTitle("🛒 مدیریت کالا")
-        self.setGeometry(500, 200, 470, 450)
+        self.setGeometry(500, 200, 850, 600)
+        self.setStyleSheet("background-color: #f9f9f9;")
+
+        self.selected_row = None
 
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setContentsMargins(25, 25, 25, 25)
         main_layout.setSpacing(20)
-        
-        self.database.getAllProduct()
-        
-        products = [
-            ["001", "Apple", "$1.20", "Fresh red apple"],
-            ["002", "Banana", "$122", "Fresh red Banana"],
-        ]
 
-        self.table = QTableWidget(len(products), len(products[0]))
-        self.table.setHorizontalHeaderLabels(["کدکالا", "نام کالا", "قیمت", "توضیحات"])
+        # فونت پیش‌فرض
+        app_font = QFont("B Nazanin", 13)
+        self.setFont(app_font)
+
+        # جدول کالاها
+        products = self.database.getAllProduct()
+        num_columns = len(vars(products[0])) if products else 0
+
+        self.table = QTableWidget(len(products), num_columns)
+        self.table.setHorizontalHeaderLabels(
+            ["کد کالا", "نام کالا", "قیمت خرید", "قیمت فروش", "موجودی", "توضیحات"]
+        )
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
+        self.table.setStyleSheet(
+            """
+            QHeaderView::section {
+                background-color: #3c8dbc;
+                color: white;
+                padding: 5px;
+                border: none;
+                font-weight: bold;
+            }
+            QTableWidget {
+                background-color: #ffffff;
+                alternate-background-color: #f2f7fb;
+                gridline-color: #cfd8dc;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+            }
+            QTableWidget::item:selected {
+                background-color: #cbe7ff;
+            }
+        """
+        )
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         for row, product in enumerate(products):
-            for col, item_text in enumerate(product):
-                item = QTableWidgetItem(item_text)
-                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            product_dict = vars(product)
+            for col, (key, value) in enumerate(product_dict.items()):
+                item = QTableWidgetItem(str(value) if value else "")
+                item.setTextAlignment(Qt.AlignCenter)
                 self.table.setItem(row, col, item)
 
         main_layout.addWidget(self.table)
 
-        # فرم ویرایش پایین جدول
+        # فرم ویرایش اطلاعات
         form_layout = QFormLayout()
-        self.code_edit = QLineEdit()
-        self.code_edit.setReadOnly(True)
-        self.name_edit = QLineEdit()
-        self.desc_edit = QLineEdit()
-        self.price_edit = QLineEdit()
-
-        # Set RTL direction
-        self.setLayoutDirection(Qt.RightToLeft)
-        for widget in [
-            self.code_edit,
-            self.name_edit,
-            self.desc_edit,
-            self.price_edit,
-        ]:
-            widget.setFixedHeight(35)
-            widget.setFixedWidth(300)
-            widget.setLayoutDirection(Qt.RightToLeft)
-
         form_layout.setLabelAlignment(Qt.AlignRight)
+        self.setLayoutDirection(Qt.RightToLeft)
 
-        form_layout.addRow(QLabel("کد کالا :"), self.code_edit)
-        form_layout.addRow(QLabel("نام کالا :"), self.name_edit)
-        form_layout.addRow(QLabel("قیمت کالا :"), self.price_edit)
-        form_layout.addRow(QLabel("توضیحات :"), self.desc_edit)
+        def create_input():
+            field = QLineEdit()
+            field.setFixedHeight(40)
+            field.setStyleSheet(
+                """
+            QLineEdit {
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                padding: 8px 12px;
+                background-color: #fafafa;
+                font-size: 14px;
+                font-family: 'B Nazanin';
+                color: #333;
+                direction: rtl;
+                transition: all 0.3s ease;
+            }
+
+            QLineEdit:focus {
+            border: 2px solid #3c8dbc;
+            background-color: #ffffff;
+            }
+        """
+            )
+
+            return field
+
+        self.code_edit = create_input()
+        self.code_edit.setReadOnly(True)
+        self.name_edit = create_input()
+        self.buy_price_edit = create_input()
+        self.sell_price_edit = create_input()
+        self.inventory_edit = create_input()
+        self.desc_edit = create_input()
+
+        inputs = [
+            ("کد کالا :", self.code_edit),
+            ("نام کالا :", self.name_edit),
+            ("قیمت خرید :", self.buy_price_edit),
+            ("قیمت فروش :", self.sell_price_edit),
+            ("موجودی :", self.inventory_edit),
+            ("توضیحات :", self.desc_edit),
+        ]
+
+        for label, field in inputs:
+            form_layout.addRow(QLabel(label), field)
 
         main_layout.addLayout(form_layout)
 
         # دکمه ذخیره
         button_layout = QHBoxLayout()
-        save_button = QPushButton("ذخیره تغییرات")
-        save_button.setFixedHeight(40)
-        save_button.setFixedWidth(200)
-        button_layout.addWidget(save_button)
-        main_layout.addLayout(button_layout)
+        save_button = QPushButton("💾 ذخیره تغییرات")
+        save_button.setFixedHeight(45)
+        save_button.setFixedWidth(220)
 
+        save_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-size: 16px;
+                border-radius: 10px;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """
+        )
+
+        button_layout.addStretch()
+        button_layout.addWidget(save_button)
+        button_layout.addStretch()
+
+        main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-        # اتصال سیگنال‌ها
+        # سیگنال‌ها
         self.table.cellClicked.connect(self.load_selected_row)
         save_button.clicked.connect(self.save_changes)
 
     def load_selected_row(self, row):
-
         self.selected_row = row
         self.code_edit.setText(self.table.item(row, 0).text())
         self.name_edit.setText(self.table.item(row, 1).text())
-        self.price_edit.setText(self.table.item(row, 2).text())
-        self.desc_edit.setText(self.table.item(row, 3).text())
+        self.buy_price_edit.setText(self.table.item(row, 2).text())
+        self.sell_price_edit.setText(self.table.item(row, 3).text())
+        self.inventory_edit.setText(self.table.item(row, 4).text())
+        self.desc_edit.setText(self.table.item(row, 5).text())
 
     def save_changes(self):
         row = self.selected_row
-        prCode = self.code_edit.text()
-        prName = self.name_edit.text()
-        buyPrice = self.price_edit.text()
-        desc = self.desc_edit.text()
         if row is not None:
-            self.table.setItem(row, 0, QTableWidgetItem(prCode))
+            prCode = self.code_edit.text()
+            prName = self.name_edit.text()
+            buyPrice = self.buy_price_edit.text()
+            sellPrice = self.sell_price_edit.text()
+            inventory = self.inventory_edit.text()
+            desc = self.desc_edit.text()
+
             self.table.setItem(row, 1, QTableWidgetItem(prName))
             self.table.setItem(row, 2, QTableWidgetItem(buyPrice))
-            self.table.setItem(row, 3, QTableWidgetItem(desc))
+            self.table.setItem(row, 3, QTableWidgetItem(sellPrice))
+            self.table.setItem(row, 4, QTableWidgetItem(inventory))
+            self.table.setItem(row, 5, QTableWidgetItem(desc))
+
             self.database.updateProductById(
-                Product(prCode, prName, buyPrice, 11, 1, desc)
+                Product(prCode, prName, buyPrice, sellPrice, inventory, desc)
             )
             self.database.close()
-            print(f"Row {row} updated.")
+            print(f"✅ ردیف {row} با موفقیت بروزرسانی شد.")
