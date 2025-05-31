@@ -1,13 +1,8 @@
 import pdfkit
 import os
+from di.injection import product_service
 
-orders = [
-    {"name": "ماست کاله", "code": "PRD001", "desc": "ماست پرچرب 1 کیلوگرمی", "quantity": 3, "price": 90000},
-    {"name": "دوغ آبعلی", "code": "PRD002", "desc": "دوغ گازدار 1.5 لیتری", "quantity": 2, "price": 60000},
-    {"name": "پنیر صباح", "code": "PRD003", "desc": "پنیر سفید 400 گرمی", "quantity": 5, "price": 75000},
-]
-
-total_price = sum(item["quantity"] * item["price"] for item in orders)
+products=product_service.list_products()
 
 html = f"""
 <!DOCTYPE html>
@@ -39,38 +34,36 @@ html = f"""
     </style>
 </head>
 <body>
-    <h1>📄 گزارش سفارش کالا</h1>
+    <h1>📄 گزارش کالا</h1>
     <table>
         <thead>
             <tr>
-                <th>نام کالا</th>
                 <th>کد</th>
-                <th>توضیحات</th>
+                <th>نام کالا</th>
                 <th>تعداد</th>
-                <th>قیمت واحد (تومان)</th>
-                <th>قیمت کل (تومان)</th>
+                <th>قیمت خرید (تومان)</th>
+                <th>قیمت فروش (تومان)</th>
+                <th>توضیحات</th>
             </tr>
         </thead>
         <tbody>
 """
 
-for item in orders:
-    total = item["quantity"] * item["price"]
+for product in products:
     html += f"""
         <tr>
-            <td>{item['name']}</td>
-            <td>{item['code']}</td>
-            <td>{item['desc']}</td>
-            <td>{item['quantity']}</td>
-            <td>{item['price']:,}</td>
-            <td>{total:,}</td>
+            <td>{product.productCode}</td>
+            <td>{product.productName}</td>
+            <td>{product.inventory}</td>
+            <td>{product.buyPrice}</td>
+            <td>{product.sellPrice}</td>
+            <td>{product.description}</td>
         </tr>
     """
 
 html += f"""
         </tbody>
     </table>
-    <h3>مبلغ کل سفارش‌ها: {total_price:,} تومان</h3>
 </body>
 </html>
 """
