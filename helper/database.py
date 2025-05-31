@@ -1,8 +1,7 @@
 import sqlite3
-from model.product import Product
+from Model.product import Product
 
-
-class Database:
+class Database():
 
     def __init__(self):
         self.con = sqlite3.connect("warehouse.db")
@@ -24,62 +23,6 @@ class Database:
         """
         )
 
-        self.con.commit()
-
-    def addNewProduct(self, product):
-        cursor = self.con.cursor()
-        cursor.execute(
-            "INSERT INTO Product (prName, buyPrice, sellPrice, inventory, desc) VALUES (?, ?, ?, ?, ?)",
-            (
-                product.productName,
-                product.buyPrice,
-                product.sellPrice,
-                product.inventory,
-                product.description,
-            ),
-        )
-        self.con.commit()
-
-    def getAllProduct(self):
-        cursor = self.con.cursor()
-        cursor.execute(
-            """
-                SELECT * FROM Product
-            """
-        )
-        rows = cursor.fetchall()
-        products = []
-
-        for row in rows:
-            product = Product(
-                prCode=row["prCode"],
-                prName=row["prName"],
-                buyPrice=row["buyPrice"],
-                sellPrice=row["sellPrice"],
-                inventory=row["inventory"],
-                desc=row["desc"],
-            )
-            
-            products.append(product)
-
-        print(products)
-
-    def updateProductById(self, product):
-        cursor = self.con.cursor()
-        query = """
-    UPDATE Product
-        SET prName = ?, buyPrice = ?, sellPrice = ?, inventory = ?, description = ?
-    WHERE prId = ?
-        """
-        values = (
-            product["prName"],
-            product["buyPrice"],
-            product["sellPrice"],
-            product["inventory"],
-            product["desc"],
-            product["prCode"],
-        )
-        cursor.execute(query, values)
         self.con.commit()
 
     def close(self):
