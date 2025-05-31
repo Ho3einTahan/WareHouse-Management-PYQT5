@@ -2,8 +2,8 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from forms.add_product_form import AddProductForm
-from forms.edit_product_form import EditProductForm
+from Forms.add_product_form import AddProductForm
+from Forms.edit_product_form import EditProductForm
 
 
 class MainWindow(QMainWindow):
