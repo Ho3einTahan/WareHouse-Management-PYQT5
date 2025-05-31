@@ -15,10 +15,13 @@
 
 #### ⚠️ Attention :
 1. You Need To Install `wkhtmltopdf` from `https://wkhtmltopdf.org/downloads.html`
-2. 📌 Make sure the following path exists on your computer:
+2. 📌 Make sure the following path exists on your computer :
 ``` python 
 config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
 ```
+
+#### 📄 View the example report at :
+ `https://github.com/Ho3einTahan/WareHouse-Management-PYQT5/blob/main/example/report.pdf`
 
 #### Run the Project :
 ``` python
