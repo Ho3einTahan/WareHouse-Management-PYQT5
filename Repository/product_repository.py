@@ -15,3 +15,6 @@ class ProductRepository:
 
     def updateProduct(self, product: Product):
         self.productDataSource.updateProductById(product)
+    
+    def deleteProduct(self,prCode):
+        self.productDataSource.deleteProductById(prCode)

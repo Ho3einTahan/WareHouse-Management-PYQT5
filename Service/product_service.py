@@ -1,17 +1,17 @@
 from Model.product import Product
 from Repository.product_repository import ProductRepository
 
-
 class ProductService:
 
     def __init__(self, product_repository: ProductRepository):
         self.repo = product_repository
 
-    def create_product(self, prName, buyPrice, sellPrice, inventory, desc):
+    def create_product(self,prCode, prName, buyPrice, sellPrice, inventory, desc):
         if buyPrice < 0 or sellPrice < 0 or inventory < 0:
             raise ValueError("قیمت و موجودی نمی‌تواند منفی باشد")
 
         product = Product(
+            prCode=prCode,
             prName=prName,
             buyPrice=buyPrice,
             sellPrice=sellPrice,
@@ -26,3 +26,6 @@ class ProductService:
 
     def update_product(self, product):
         self.repo.updateProduct(product)
+        
+    def deleteProduct(self,prCode):
+        self.repo.deleteProduct(prCode)

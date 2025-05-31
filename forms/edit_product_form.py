@@ -1,26 +1,18 @@
-from PyQt5.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QFormLayout,
-    QLabel,
-    QTableWidget,
-    QTableWidgetItem,
-    QPushButton,
-    QLineEdit,
-    QHBoxLayout,
-    QApplication,
-    QHeaderView,
-)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QColor, QPalette
-from model.product import Product
-from helper.database import Database
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import ( QFormLayout, QHBoxLayout,
+                             QHeaderView, QLabel, QLineEdit, QPushButton,
+                             QTableWidget, QTableWidgetItem, QVBoxLayout,
+                             QWidget)
+
+from di.injection import product_service
+from Model.product import Product
 
 
 class EditProductForm(QWidget):
     def __init__(self):
         super().__init__()
-        self.database = Database()
+        self.productService=product_service
         self.setWindowTitle("🛒 مدیریت کالا")
         self.setGeometry(500, 200, 850, 600)
         self.setStyleSheet("background-color: #f9f9f9;")
@@ -36,7 +28,7 @@ class EditProductForm(QWidget):
         self.setFont(app_font)
 
         # جدول کالاها
-        products = self.database.getAllProduct()
+        products = self.productService.list_products()
         num_columns = len(vars(products[0])) if products else 0
 
         self.table = QTableWidget(len(products), num_columns)
@@ -138,6 +130,10 @@ class EditProductForm(QWidget):
         save_button = QPushButton("💾 ذخیره تغییرات")
         save_button.setFixedHeight(45)
         save_button.setFixedWidth(220)
+        #########################
+        delete_button = QPushButton("❌ حذف کالا")
+        delete_button.setFixedHeight(45)
+        delete_button.setFixedWidth(220)
 
         save_button.setStyleSheet(
             """
@@ -154,8 +150,21 @@ class EditProductForm(QWidget):
         """
         )
 
+        delete_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: red;
+                color: white;
+                font-size: 16px;
+                border-radius: 10px;
+                padding: 10px;
+            }
+        """
+        )
+
         button_layout.addStretch()
         button_layout.addWidget(save_button)
+        button_layout.addWidget(delete_button)
         button_layout.addStretch()
 
         main_layout.addLayout(button_layout)
@@ -164,7 +173,8 @@ class EditProductForm(QWidget):
         # سیگنال‌ها
         self.table.cellClicked.connect(self.load_selected_row)
         save_button.clicked.connect(self.save_changes)
-
+        delete_button.clicked.connect(lambda:self.deleteProduct(int(self.code_edit.text())))
+        
     def load_selected_row(self, row):
         self.selected_row = row
         self.code_edit.setText(self.table.item(row, 0).text())
@@ -190,8 +200,11 @@ class EditProductForm(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(inventory))
             self.table.setItem(row, 5, QTableWidgetItem(desc))
 
-            self.database.updateProductById(
+            self.productService.update_product(
                 Product(prCode, prName, buyPrice, sellPrice, inventory, desc)
             )
-            self.database.close()
             print(f"✅ ردیف {row} با موفقیت بروزرسانی شد.")
+    
+    def deleteProduct(self,prCode):
+        self.table.removeRow(self.selected_row)
+        self.productService.deleteProduct(prCode)

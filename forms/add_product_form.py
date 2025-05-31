@@ -12,12 +12,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from Helper.database import Database
 from Model.product import Product
+from di.injection import product_service
 
 class AddProductForm(QWidget):
     def __init__(self):
         super().__init__()
+        self.productService=product_service
         self.setWindowTitle("🛒 افزودن کالای جدید")
         self.setGeometry(500, 200, 500, 550)
         self.setStyleSheet(
@@ -239,20 +240,9 @@ class AddProductForm(QWidget):
         inventory=None,
         description=None,
     ):
-        db = Database()
         try:
-            product = Product(
-                prCode=prCode,
-                prName=productName,
-                buyPrice=buyPrice,
-                sellPrice=sellPrice,
-                inventory=inventory,
-                desc=description,
-            )
-            db.addNewProduct(product)
+            self.productService.create_product(prCode,productName,buyPrice,sellPrice,inventory,description)
             print("محصول با موفقیت ذخیره شد.")
             self.close()
         except Exception as e:
             print("خطا هنگام ذخیره محصول:", e)
-        finally:
-            db.close()
