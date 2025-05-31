@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from Forms.add_product_form import AddProductForm
 from Forms.edit_product_form import EditProductForm
-
+from pdf.pdf_generator import generatePdf
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,25 +22,20 @@ class MainWindow(QMainWindow):
         baseInfoMenu = menuBar.addMenu("اطلاعات پایه")
 
         addItemAction = QAction("افزودن کالا", self)
-        viewItemsAction = QAction("مشاهده کالاها", self)
         addItemAction.triggered.connect(self._openAddProductForm)
         baseInfoMenu.addAction(addItemAction)
-        baseInfoMenu.addAction(viewItemsAction)
 
         # ویرایش
         editMenu = menuBar.addMenu("ویرایش")
         editItemAction = QAction("ویرایش کالا", self)
-        deleteItemAction = QAction("حذف کالا", self)
         editItemAction.triggered.connect(self._openEditProductForm)
         editMenu.addAction(editItemAction)
-        editMenu.addAction(deleteItemAction)
 
         # گزارش‌ها
         reportMenu = menuBar.addMenu("گزارش‌ها")
-        stockReportAction = QAction("گزارش موجودی", self)
-        lowStockAction = QAction("گزارش کمبود موجودی", self)
+        stockReportAction = QAction("(pdf) گزارش", self)
+        stockReportAction.triggered.connect(generatePdf)
         reportMenu.addAction(stockReportAction)
-        reportMenu.addAction(lowStockAction)
 
         # خروج
         exitMenu = menuBar.addMenu("خروج")
